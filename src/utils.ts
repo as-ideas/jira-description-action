@@ -63,25 +63,51 @@ export const getPRDescription = (oldBody: string, details: string): string => {
 };
 
 export const buildPRDescription = (issues: JIRADetails[]) => {
-  return issues
+  const validIssues = filterIssuesByProject(issues);
+  const sortedIssues = sortIssuesByProjectAndId(validIssues);
+
+  return sortedIssues
     .map((issue) => {
-      return `- [ ] [${issue.key}](${issue.url}) ${issue.summary}`;
+      const estimationTextRegexPattern = /[(\[]\d+(?:[,.]\d+)?d[)\]]/g;
+      const normalizedSummary = issue.summary.replace(estimationTextRegexPattern, '');
+
+      return `- [ ] [${issue.key}](${issue.url}) ${normalizedSummary}`;
     })
     .join('\n');
 };
 
-export const toJiraIssueView = (issue: JIRA.Issue, jiraBaseUrl: string) => {
+export const toJiraIssueView = (issue: JIRA.Issue, jiraBaseUrl: string): JIRADetails => {
   const {
-    fields: { issuetype: type, summary },
+    fields: { issuetype: type, summary, project },
   } = issue;
 
   return {
     key: issue.key,
     summary,
+    project: project.key,
     url: `${jiraBaseUrl}/browse/${issue.key}`,
     type: {
       name: type.name,
       icon: type.iconUrl,
     },
   };
+};
+
+const filterIssuesByProject = (issues: JIRADetails[]) => {
+  // TODO: Add projects as a GH Action input
+  const validProjects = ['WT', 'AUP'];
+  return issues.filter((issue) => validProjects.includes(issue.project));
+};
+
+const sortIssuesByProjectAndId = (issues: JIRADetails[]) => {
+  return issues.sort((a, b) => {
+    const [projectA, idNumberA] = a.key.split('-');
+    const [projectB, idNumberB] = b.key.split('-');
+
+    if (projectA === projectB) {
+      return parseInt(idNumberA, 10) - parseInt(idNumberB, 10);
+    }
+
+    return projectA.localeCompare(projectB);
+  });
 };

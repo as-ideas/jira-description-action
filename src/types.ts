@@ -86,6 +86,7 @@ export interface JIRADetails {
   key: string;
   summary: string;
   url: string;
+  project: string;
   type: {
     name: string;
     icon: string;
