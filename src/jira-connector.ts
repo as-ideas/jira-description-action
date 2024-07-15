@@ -1,6 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import { getInputs } from './action-inputs';
 import { JIRA, JIRADetails } from './types';
+import { toJiraIssueView } from './utils';
 
 export class JiraConnector {
   client: AxiosInstance;
@@ -27,24 +28,25 @@ export class JiraConnector {
 
     try {
       const issue: JIRA.Issue = await this.getIssue(key);
-      const {
-        fields: { issuetype: type, project, summary },
-      } = issue;
+      return toJiraIssueView(issue, this.JIRA_BASE_URL);
+    } catch (error) {
+      console.log(
+        'Error fetching details from JIRA. Please check if token you provide is built correctly & API key has all needed permissions. https://github.com/cakeinpanic/jira-description-action#jira-token'
+      );
+      if (error.response) {
+        throw new Error(JSON.stringify(error.response.data, null, 4));
+      }
+      throw error;
+    }
+  }
 
-      return {
-        key,
-        summary,
-        url: `${this.JIRA_BASE_URL}/browse/${key}`,
-        type: {
-          name: type.name,
-          icon: type.iconUrl,
-        },
-        project: {
-          name: project.name,
-          url: `${this.JIRA_BASE_URL}/browse/${project.key}`,
-          key: project.key,
-        },
-      };
+  async getSprintDetails(id: string): Promise<JIRADetails[]> {
+    console.log(`Fetching sprint with id ${id} details from JIRA`);
+
+    try {
+      const sprint: JIRA.Sprint = await this.getSprintIssues(id);
+
+      return sprint.issues.map((issue) => toJiraIssueView(issue, this.JIRA_BASE_URL));
     } catch (error) {
       console.log(
         'Error fetching details from JIRA. Please check if token you provide is built correctly & API key has all needed permissions. https://github.com/cakeinpanic/jira-description-action#jira-token'
@@ -59,6 +61,13 @@ export class JiraConnector {
   async getIssue(id: string): Promise<JIRA.Issue> {
     const url = `/issue/${id}?fields=project,summary,issuetype`;
     const response = await this.client.get<JIRA.Issue>(url);
+    return response.data;
+  }
+
+  async getSprintIssues(id: string): Promise<JIRA.Sprint> {
+    const jql = encodeURI(`sprint = ${id} and issuetype NOT IN ("Technical task")`);
+    const url = `/search?jql=${jql}&fields=summary,issuetype,project`;
+    const response = await this.client.get<JIRA.Sprint>(url);
     return response.data;
   }
 }

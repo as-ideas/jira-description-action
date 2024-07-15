@@ -1,12 +1,5 @@
-import {
-  BOT_BRANCH_PATTERNS,
-  DEFAULT_BRANCH_PATTERNS,
-  HIDDEN_MARKER_END,
-  HIDDEN_MARKER_START,
-  JIRA_REGEX_MATCHER,
-  WARNING_MESSAGE_ABOUT_HIDDEN_MARKERS,
-} from './constants';
-import { JIRADetails } from './types';
+import { BOT_BRANCH_PATTERNS, DEFAULT_BRANCH_PATTERNS, HIDDEN_MARKER_END, HIDDEN_MARKER_START, JIRA_REGEX_MATCHER } from './constants';
+import { JIRA, JIRADetails } from './types';
 
 const getJIRAIssueKey = (input: string, regexp: RegExp = JIRA_REGEX_MATCHER): string | null => {
   const matches = regexp.exec(input);
@@ -54,27 +47,42 @@ const escapeRegexp = (str: string): string => {
 };
 
 export const getPRDescription = (oldBody: string, details: string): string => {
-  const hiddenMarkerStartRg = escapeRegexp(HIDDEN_MARKER_START);
-  const hiddenMarkerEndRg = escapeRegexp(HIDDEN_MARKER_END);
-  const warningMsgRg = escapeRegexp(WARNING_MESSAGE_ABOUT_HIDDEN_MARKERS);
+  const hiddenStartMarkerRegex = escapeRegexp(HIDDEN_MARKER_START);
+  const hiddenEndMarkerRegex = escapeRegexp(HIDDEN_MARKER_END);
 
-  const replaceDetailsRg = new RegExp(`${hiddenMarkerStartRg}([\\s\\S]+)${hiddenMarkerEndRg}[\\s]?`, 'igm');
-  const replaceWarningMessageRg = new RegExp(`${warningMsgRg}[\\s]?`, 'igm');
-  const jiraDetailsMessage = `${WARNING_MESSAGE_ABOUT_HIDDEN_MARKERS}
-${HIDDEN_MARKER_START}
-${details}
-${HIDDEN_MARKER_END}
-`;
-  if (replaceDetailsRg.test(oldBody)) {
-    return (oldBody ?? '').replace(replaceWarningMessageRg, '').replace(replaceDetailsRg, jiraDetailsMessage);
+  const replaceDetailsRegex = new RegExp(`${hiddenStartMarkerRegex}([\\s\\S]+)${hiddenEndMarkerRegex}[\\s]?`, 'igm');
+  const jiraDetailsMessage = `
+    ${HIDDEN_MARKER_START}
+    ${details}
+    ${HIDDEN_MARKER_END}
+  `;
+
+  if (replaceDetailsRegex.test(oldBody)) {
+    return (oldBody ?? '').replace(replaceDetailsRegex, jiraDetailsMessage);
   }
   return jiraDetailsMessage + oldBody;
 };
 
-export const buildPRDescription = (details: JIRADetails) => {
-  const displayKey = details.key.toUpperCase();
-  return `<table><tbody><tr><td>
-  <a href="${details.url}" title="${displayKey}" target="_blank"><img alt="${details.type.name}" src="${details.type.icon}" /> ${displayKey}</a>
-  ${details.summary}
-</td></tr></tbody></table><br />`;
+export const buildPRDescription = (issues: JIRADetails[]) => {
+  return issues
+    .map((issue) => {
+      return `- [ ] [${issue.key}](${issue.url}) ${issue.summary}`;
+    })
+    .join('\n');
+};
+
+export const toJiraIssueView = (issue: JIRA.Issue, jiraBaseUrl: string) => {
+  const {
+    fields: { issuetype: type, summary },
+  } = issue;
+
+  return {
+    key: issue.key,
+    summary,
+    url: `${jiraBaseUrl}/browse/${issue.key}`,
+    type: {
+      name: type.name,
+      icon: type.iconUrl,
+    },
+  };
 };

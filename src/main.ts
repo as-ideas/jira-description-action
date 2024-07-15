@@ -25,9 +25,9 @@ async function run(): Promise<void> {
       process.exit(0);
     }
 
-    const { key, source } = githubConnector.getIssueKeyFromTitle();
+    const { key, source } = githubConnector.getJiraKeyFromSource();
 
-    const details = await jiraConnector.getTicketDetails(key);
+    const details = await jiraConnector.getSprintDetails(key);
     await githubConnector.updatePrDetails(details);
 
     setOutputs(key, source);

@@ -22,6 +22,12 @@ export interface PullRequestParams {
 }
 
 export namespace JIRA {
+  export interface Sprint {
+    maxResults: number;
+    total: number;
+    issues: Issue[];
+  }
+
   export interface IssueStatus {
     self: string;
     description: string;
@@ -83,11 +89,6 @@ export interface JIRADetails {
   type: {
     name: string;
     icon: string;
-  };
-  project: {
-    name: string;
-    url: string;
-    key: string;
   };
 }
 
