@@ -1,11 +1,4 @@
-import {
-  BOT_BRANCH_PATTERNS,
-  DEFAULT_BRANCH_PATTERNS,
-  HIDDEN_MARKER_END,
-  HIDDEN_MARKER_START,
-  JIRA_REGEX_MATCHER,
-  WARNING_MESSAGE_ABOUT_HIDDEN_MARKERS,
-} from './constants';
+import { BOT_BRANCH_PATTERNS, DEFAULT_BRANCH_PATTERNS, HIDDEN_MARKER_END, HIDDEN_MARKER_START, JIRA_REGEX_MATCHER } from './constants';
 import { JIRA, JIRADetails } from './types';
 
 const getJIRAIssueKey = (input: string, regexp: RegExp = JIRA_REGEX_MATCHER): string | null => {
@@ -56,18 +49,16 @@ const escapeRegexp = (str: string): string => {
 export const getPRDescription = (oldBody: string, details: string): string => {
   const hiddenStartMarkerRegex = escapeRegexp(HIDDEN_MARKER_START);
   const hiddenEndMarkerRegex = escapeRegexp(HIDDEN_MARKER_END);
-  const warningMarkerRegex = escapeRegexp(WARNING_MESSAGE_ABOUT_HIDDEN_MARKERS);
 
   const replaceDetailsRegex = new RegExp(`${hiddenStartMarkerRegex}([\\s\\S]+)${hiddenEndMarkerRegex}[\\s]?`, 'igm');
   const jiraDetailsMessage = `
-    ${WARNING_MESSAGE_ABOUT_HIDDEN_MARKERS}
     ${HIDDEN_MARKER_START}
     ${details}
     ${HIDDEN_MARKER_END}
   `;
 
   if (replaceDetailsRegex.test(oldBody)) {
-    return (oldBody ?? '').replace(warningMarkerRegex, '').replace(replaceDetailsRegex, jiraDetailsMessage);
+    return (oldBody ?? '').replace(replaceDetailsRegex, jiraDetailsMessage);
   }
   return jiraDetailsMessage + oldBody;
 };
