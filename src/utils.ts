@@ -51,10 +51,9 @@ export const getPRDescription = (oldBody: string, details: string): string => {
   const hiddenEndMarkerRegex = escapeRegexp(HIDDEN_MARKER_END);
 
   const replaceDetailsRegex = new RegExp(`${hiddenStartMarkerRegex}([\\s\\S]+)${hiddenEndMarkerRegex}[\\s]?`, 'igm');
-  const jiraDetailsMessage = `
-    ${HIDDEN_MARKER_START}
-    ${details}
-    ${HIDDEN_MARKER_END}
+  const jiraDetailsMessage = `${HIDDEN_MARKER_START}
+  ${details}
+  ${HIDDEN_MARKER_END}
   `;
 
   if (replaceDetailsRegex.test(oldBody)) {
