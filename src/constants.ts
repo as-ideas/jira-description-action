@@ -1,5 +1,5 @@
-export const HIDDEN_MARKER_END = '<!--jira-description-action-hidden-marker-end-->';
-export const HIDDEN_MARKER_START = '<!--jira-description-action-hidden-marker-start-->';
+export const HIDDEN_MARKER_START = '<!--jira-description-action-hidden-start-marker-->';
+export const HIDDEN_MARKER_END = '<!--jira-description-action-hidden-end-marker-->';
 
 export const BOT_BRANCH_PATTERNS: RegExp[] = [/^dependabot/];
 
