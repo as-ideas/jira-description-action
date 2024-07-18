@@ -1,5 +1,5 @@
 import { BOT_BRANCH_PATTERNS, DEFAULT_BRANCH_PATTERNS, HIDDEN_MARKER_END, HIDDEN_MARKER_START, JIRA_REGEX_MATCHER } from './constants';
-import { JIRA, JIRADetails } from './types';
+import { JIRA, JIRAIssueDetails } from './types';
 
 const getJIRAIssueKey = (input: string, regexp: RegExp = JIRA_REGEX_MATCHER): string | null => {
   const matches = regexp.exec(input);
@@ -62,7 +62,7 @@ export const getPRDescription = (oldBody: string, details: string): string => {
   return jiraDetailsMessage + oldBody;
 };
 
-export const buildPRDescription = (issues: JIRADetails[]) => {
+export const buildPRDescription = (issues: JIRAIssueDetails[]) => {
   const validIssues = filterIssuesByProject(issues);
   const sortedIssues = sortIssuesByProjectAndId(validIssues);
 
@@ -76,7 +76,7 @@ export const buildPRDescription = (issues: JIRADetails[]) => {
     .join('\n');
 };
 
-export const toJiraIssueView = (issue: JIRA.Issue, jiraBaseUrl: string): JIRADetails => {
+export const toJiraIssueView = (issue: JIRA.Issue, jiraBaseUrl: string): JIRAIssueDetails => {
   const {
     fields: { issuetype: type, summary, project },
   } = issue;
@@ -93,13 +93,13 @@ export const toJiraIssueView = (issue: JIRA.Issue, jiraBaseUrl: string): JIRADet
   };
 };
 
-const filterIssuesByProject = (issues: JIRADetails[]) => {
+const filterIssuesByProject = (issues: JIRAIssueDetails[]) => {
   // TODO: Add projects as a GH Action input
   const validProjects = ['WT', 'AUP'];
   return issues.filter((issue) => validProjects.includes(issue.project));
 };
 
-const sortIssuesByProjectAndId = (issues: JIRADetails[]) => {
+const sortIssuesByProjectAndId = (issues: JIRAIssueDetails[]) => {
   return issues.sort((a, b) => {
     const [projectA, idNumberA] = a.key.split('-');
     const [projectB, idNumberB] = b.key.split('-');

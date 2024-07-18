@@ -2,7 +2,7 @@ import { context, getOctokit } from '@actions/github';
 import { GitHub } from '@actions/github/lib/utils';
 import { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods/dist-types/generated/parameters-and-response-types';
 import { getInputs } from './action-inputs';
-import { ESource, IGithubData, JIRADetails, PullRequestParams } from './types';
+import { ESource, IGithubData, JiraSprintDetails, PullRequestParams } from './types';
 import { buildPRDescription, getJIRAIssueKeyByDefaultRegexp, getJIRAIssueKeysByCustomRegexp, getPRDescription } from './utils';
 
 export class GithubConnector {
@@ -73,7 +73,7 @@ export class GithubConnector {
       : getJIRAIssueKeyByDefaultRegexp(stringToParse);
   }
 
-  async updatePrDetails(details: JIRADetails[]) {
+  async updatePrDetails(sprintDetails: JiraSprintDetails) {
     const owner = this.githubData.owner;
     const repo = this.githubData.repository.name;
     console.log('Updating PR details');
@@ -84,7 +84,8 @@ export class GithubConnector {
       owner,
       repo,
       pull_number: prNumber,
-      body: getPRDescription(recentBody, buildPRDescription(details)),
+      title: sprintDetails.name,
+      body: getPRDescription(recentBody, buildPRDescription(sprintDetails.issues)),
     };
 
     return await this.octokit.rest.pulls.update(prData);

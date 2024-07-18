@@ -22,7 +22,13 @@ export interface PullRequestParams {
 }
 
 export namespace JIRA {
-  export interface Sprint {
+  export interface SprintInfo {
+    id: number;
+    name: string;
+    goal: string;
+  }
+
+  export interface SprintIssues {
     maxResults: number;
     total: number;
     issues: Issue[];
@@ -82,7 +88,14 @@ export namespace JIRA {
   }
 }
 
-export interface JIRADetails {
+export interface JiraSprintDetails {
+  id: string;
+  name: string;
+  goal: string;
+  issues: JIRAIssueDetails[];
+}
+
+export interface JIRAIssueDetails {
   key: string;
   summary: string;
   url: string;
